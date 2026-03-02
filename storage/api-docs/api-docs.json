@@ -1,0 +1,2403 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Ultra ERP API Registry",
+        "description": "Global modular API documentation for the Production-grade ERP system.",
+        "contact": {
+            "email": "admin@erp.test"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Primary API Gateway"
+        }
+    ],
+    "paths": {
+        "/api/v1/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate user and return Sanctum token",
+                "operationId": "b9b760991d94b179960cd7ddc93eedf2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@erp.test"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef123456..."
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/api/v1/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Revoke current user token",
+                "operationId": "b66dd8a7864f561822c01bc8339363fb",
+                "responses": {
+                    "204": {
+                        "description": "Logout successful"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/accounts": {
+            "get": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "List all ledger accounts",
+                "operationId": "f4d259d259913f9de3bffdbb1295870e",
+                "parameters": [
+                    {
+                        "name": "active_only",
+                        "in": "query",
+                        "description": "Filter by active status",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filter by account type (asset, liability, equity, revenue, expense)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "name": "Cash equivalent",
+                                                "code": "1000",
+                                                "type": "asset",
+                                                "is_active": true
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "Create new ledger account",
+                "operationId": "ba8487268240c2e12a7077533f962bf9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "code",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "asset",
+                                            "liability",
+                                            "equity",
+                                            "revenue",
+                                            "expense"
+                                        ]
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Account created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Account created.",
+                                    "data": {
+                                        "id": 2,
+                                        "name": "Accounts Receivable",
+                                        "code": "1200",
+                                        "type": "asset",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/{account}": {
+            "get": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "Get account details with balance",
+                "operationId": "844ef57d6b9c5a3e8f5b4bd59617aaa8",
+                "parameters": [
+                    {
+                        "name": "account",
+                        "in": "path",
+                        "description": "Account ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Cash equivalent",
+                                        "code": "1000",
+                                        "type": "asset",
+                                        "is_active": true,
+                                        "balance": 15000.5
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "Update existing ledger account",
+                "operationId": "2ea4198616890a11db3c87657d80eab6",
+                "parameters": [
+                    {
+                        "name": "account",
+                        "in": "path",
+                        "description": "Account ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "asset",
+                                            "liability",
+                                            "equity",
+                                            "revenue",
+                                            "expense"
+                                        ]
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Account updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Account updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Primary Cash",
+                                        "code": "1000",
+                                        "type": "asset",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "Delete ledger account",
+                "operationId": "f2d467fee00c5fe4571f934b3f03a2dc",
+                "parameters": [
+                    {
+                        "name": "account",
+                        "in": "path",
+                        "description": "Account ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Account deleted successfully"
+                    },
+                    "404": {
+                        "description": "Account not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/journal-entries": {
+            "get": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "List all journal entries",
+                "operationId": "ced85a2160ed3500d69a7cf8292bda02",
+                "parameters": [
+                    {
+                        "name": "account_id",
+                        "in": "query",
+                        "description": "Filter by associated account ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "entry_date": "2023-10-27",
+                                                "description": "Initial capital",
+                                                "lines": [
+                                                    {
+                                                        "account_id": 1,
+                                                        "debit": 10000,
+                                                        "credit": 0
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "Record a new journal entry",
+                "operationId": "7d6e6476f5276d0ce80ad962466ff37e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "description",
+                                    "lines"
+                                ],
+                                "properties": {
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "reference_type": {
+                                        "type": "string"
+                                    },
+                                    "reference_id": {
+                                        "type": "integer"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "lines": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "account_id": {
+                                                    "type": "integer"
+                                                },
+                                                "debit": {
+                                                    "type": "number"
+                                                },
+                                                "credit": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Journal entry recorded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Journal entry created.",
+                                    "data": {
+                                        "id": 2,
+                                        "entry_date": "2023-10-28",
+                                        "description": "Office Supplies",
+                                        "lines": [
+                                            {
+                                                "account_id": 5,
+                                                "debit": 150,
+                                                "credit": 0
+                                            },
+                                            {
+                                                "account_id": 1,
+                                                "debit": 0,
+                                                "credit": 150
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or unbalanced entry"
+                    }
+                }
+            }
+        },
+        "/api/v1/journal-entries/{journalEntry}": {
+            "get": {
+                "tags": [
+                    "Accounting"
+                ],
+                "summary": "Get journal entry details",
+                "operationId": "ef35880642d9441a210e817d913aef2b",
+                "parameters": [
+                    {
+                        "name": "journalEntry",
+                        "in": "path",
+                        "description": "Journal Entry ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "entry_date": "2023-10-27",
+                                        "description": "Initial capital",
+                                        "currency": "USD",
+                                        "lines": [
+                                            {
+                                                "id": 1,
+                                                "account_id": 1,
+                                                "debit": 10000,
+                                                "credit": 0,
+                                                "account": {
+                                                    "name": "Primary Cash"
+                                                }
+                                            },
+                                            {
+                                                "id": 2,
+                                                "account_id": 3,
+                                                "debit": 0,
+                                                "credit": 10000,
+                                                "account": {
+                                                    "name": "Owner Equity"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Journal Entry not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/expenses": {
+            "get": {
+                "tags": [
+                    "Expenses"
+                ],
+                "summary": "List all expenses",
+                "operationId": "722dd707baa6041f31f6f8653460197f",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "amount": 500,
+                                                "expense_date": "2023-11-01",
+                                                "vendor_name": "Tech Corp",
+                                                "description": "Server Hosting"
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Expenses"
+                ],
+                "summary": "Create new expense",
+                "operationId": "dc45f1c3b99eddaf3c53003ceb1f7141",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "expense_category_id",
+                                    "amount",
+                                    "expense_date"
+                                ],
+                                "properties": {
+                                    "expense_category_id": {
+                                        "type": "integer"
+                                    },
+                                    "amount": {
+                                        "type": "number"
+                                    },
+                                    "expense_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "vendor_name": {
+                                        "type": "string"
+                                    },
+                                    "vendor_reference": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Expense created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Expense created successfully.",
+                                    "data": {
+                                        "id": 2,
+                                        "amount": 120.5,
+                                        "expense_date": "2023-11-02",
+                                        "vendor_name": "Office Depot"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/expenses/{expense}": {
+            "get": {
+                "tags": [
+                    "Expenses"
+                ],
+                "summary": "Get expense details",
+                "operationId": "751f4f23620ad848d37c819972534d33",
+                "parameters": [
+                    {
+                        "name": "expense",
+                        "in": "path",
+                        "description": "Expense ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "amount": 500,
+                                        "expense_date": "2023-11-01",
+                                        "vendor_name": "Tech Corp",
+                                        "description": "Server Hosting",
+                                        "currency": "USD"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Expense not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Expenses"
+                ],
+                "summary": "Update existing expense",
+                "operationId": "ee3bebe0ca2871c79a1e4669da8e2a77",
+                "parameters": [
+                    {
+                        "name": "expense",
+                        "in": "path",
+                        "description": "Expense ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "expense_category_id": {
+                                        "type": "integer"
+                                    },
+                                    "amount": {
+                                        "type": "number"
+                                    },
+                                    "expense_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "vendor_name": {
+                                        "type": "string"
+                                    },
+                                    "vendor_reference": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Expense updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Expense updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "amount": 550,
+                                        "description": "Upgraded Server Hosting"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Expense not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Expenses"
+                ],
+                "summary": "Delete expense",
+                "operationId": "b45d133632d32fe799d8738618858cea",
+                "parameters": [
+                    {
+                        "name": "expense",
+                        "in": "path",
+                        "description": "Expense ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Expense deleted successfully"
+                    },
+                    "404": {
+                        "description": "Expense not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/stock-movements": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List all stock movements",
+                "operationId": "5b866ce3b890a54471e5b1352338665d",
+                "parameters": [
+                    {
+                        "name": "warehouse_id",
+                        "in": "query",
+                        "description": "Filter by warehouse ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "description": "Filter by product ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "product_id": 1,
+                                                "warehouse_id": 1,
+                                                "quantity": 50,
+                                                "type": "in",
+                                                "reference_type": "purchase",
+                                                "product": {
+                                                    "id": 1,
+                                                    "name": "MacBook Pro",
+                                                    "sku": "LAP-MBP-14"
+                                                },
+                                                "warehouse": {
+                                                    "id": 1,
+                                                    "name": "Main Warehouse"
+                                                }
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/stock-movements/{stockMovement}": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get stock movement details",
+                "operationId": "37d76a3428bf5d5d78c1c9b734c0b4dd",
+                "parameters": [
+                    {
+                        "name": "stockMovement",
+                        "in": "path",
+                        "description": "Stock Movement ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "product_id": 1,
+                                        "warehouse_id": 1,
+                                        "quantity": 50,
+                                        "type": "in",
+                                        "reference_type": "purchase",
+                                        "reference_id": 101,
+                                        "product": {
+                                            "id": 1,
+                                            "name": "MacBook Pro",
+                                            "sku": "LAP-MBP-14"
+                                        },
+                                        "warehouse": {
+                                            "id": 1,
+                                            "name": "Main Warehouse"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Stock Movement not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/stock": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get current stock levels",
+                "operationId": "52cbcb607c0bc40bd3084d06ff8a86c8",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "warehouse_id",
+                        "in": "query",
+                        "description": "Warehouse ID (optional, returns all if omitted)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "product_id": 1,
+                                        "stock_by_warehouse": [
+                                            {
+                                                "warehouse_id": 1,
+                                                "warehouse_name": "Main Warehouse",
+                                                "quantity": 150
+                                            },
+                                            {
+                                                "warehouse_id": 2,
+                                                "warehouse_name": "East Coast Hub",
+                                                "quantity": 50
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/warehouses": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "List all warehouses",
+                "operationId": "772c5e5ec9e48d1d83a6cfcb0e86e255",
+                "parameters": [
+                    {
+                        "name": "active_only",
+                        "in": "query",
+                        "description": "Filter by active status",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "name": "Main Warehouse",
+                                                "code": "WH-MAIN",
+                                                "is_active": true
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Create new warehouse",
+                "operationId": "25dfc1a312f4ac6651beb13d66788553",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "code"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Warehouse created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Warehouse created.",
+                                    "data": {
+                                        "id": 2,
+                                        "name": "East Coast Hub",
+                                        "code": "WH-EAST",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/warehouses/{warehouse}": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Get warehouse details",
+                "operationId": "6a11981951cd190a14cac1dccb902036",
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "description": "Warehouse ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Main Warehouse",
+                                        "code": "WH-MAIN",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Warehouse not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Update existing warehouse",
+                "operationId": "b652500ee44073d87442b7ad0855a778",
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "description": "Warehouse ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "code": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Warehouse updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Warehouse updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Global HQ Warehouse",
+                                        "code": "WH-MAIN",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Warehouse not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Delete warehouse",
+                "operationId": "fc1d6e0b34e0670bf5e9082b104addda",
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "path",
+                        "description": "Warehouse ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Warehouse deleted successfully"
+                    },
+                    "404": {
+                        "description": "Warehouse not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "List all categories",
+                "operationId": "9b88083e941284ced6a6562cbb56e27f",
+                "parameters": [
+                    {
+                        "name": "active_only",
+                        "in": "query",
+                        "description": "Filter by active status",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "name": "Electronics",
+                                                "slug": "electronics",
+                                                "products_count": 15,
+                                                "is_active": true
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Create new category",
+                "operationId": "bdbb8a59efd4c865270ed9576e39fe3d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Category created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Category created.",
+                                    "data": {
+                                        "id": 2,
+                                        "name": "Furniture",
+                                        "slug": "furniture",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/categories/{category}": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Get category details",
+                "operationId": "fa1afeadcdc448594864d7b66d8d8a72",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Electronics",
+                                        "slug": "electronics",
+                                        "description": "Electronic devices and accessories",
+                                        "is_active": true,
+                                        "products": [
+                                            {
+                                                "id": 1,
+                                                "name": "MacBook Pro",
+                                                "sku": "LAP-MBP-14"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Update existing category",
+                "operationId": "007fea522df7ed4e77b7c1c02e0fb918",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Category updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Category updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "Computers & Electronics",
+                                        "slug": "computers-electronics",
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Delete category",
+                "operationId": "90e8f5bf92728419ba378858e2bb8514",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Category deleted successfully"
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "List all products",
+                "operationId": "b9eb5785118ccff96a37d1ed70bc5bde",
+                "parameters": [
+                    {
+                        "name": "active_only",
+                        "in": "query",
+                        "description": "Filter by active status",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "name": "MacBook Pro",
+                                                "sku": "LAP-MBP-14",
+                                                "cost_price": 1200,
+                                                "selling_price": 1999,
+                                                "category": {
+                                                    "id": 1,
+                                                    "name": "Electronics"
+                                                }
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create new product",
+                "operationId": "99d7012c828aa1592c9da8f8cdd4a683",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "sku",
+                                    "cost_price",
+                                    "selling_price"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "sku": {
+                                        "type": "string"
+                                    },
+                                    "cost_price": {
+                                        "type": "number"
+                                    },
+                                    "selling_price": {
+                                        "type": "number"
+                                    },
+                                    "tax_percentage": {
+                                        "type": "number"
+                                    },
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Product created.",
+                                    "data": {
+                                        "id": 2,
+                                        "name": "Office Chair",
+                                        "sku": "FURN-CHAIR-01",
+                                        "cost_price": 45.5,
+                                        "selling_price": 129.99,
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/products/{product}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get product details",
+                "operationId": "08e25936dd081d8ef7a0cd83af3f5eac",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "name": "MacBook Pro",
+                                        "sku": "LAP-MBP-14",
+                                        "cost_price": 1200,
+                                        "selling_price": 1999,
+                                        "is_active": true,
+                                        "category": {
+                                            "id": 1,
+                                            "name": "Electronics"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update existing product",
+                "operationId": "58a11d45fa7c7e196b33bbd7c1879948",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "sku": {
+                                        "type": "string"
+                                    },
+                                    "cost_price": {
+                                        "type": "number"
+                                    },
+                                    "selling_price": {
+                                        "type": "number"
+                                    },
+                                    "tax_percentage": {
+                                        "type": "number"
+                                    },
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Product updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "name": "MacBook Pro M2",
+                                        "sku": "LAP-MBP-14-M2",
+                                        "cost_price": 1200,
+                                        "selling_price": 2099,
+                                        "is_active": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete product",
+                "operationId": "7a14cccb31c5c25d5282306b74668bfb",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Product deleted successfully"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/refunds": {
+            "get": {
+                "tags": [
+                    "Refunds"
+                ],
+                "summary": "List all refunds",
+                "operationId": "bc37d267c878ed55e02d38be748244d6",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "sale_id": 5,
+                                                "warehouse_id": 1,
+                                                "status": "completed"
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Refunds"
+                ],
+                "summary": "Create new refund",
+                "operationId": "cbf03d8335434a33279ca9349350c2d9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "sale_id",
+                                    "warehouse_id",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "sale_id": {
+                                        "type": "integer"
+                                    },
+                                    "warehouse_id": {
+                                        "type": "integer"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "sale_item_id": {
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Refund created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Refund created successfully.",
+                                    "data": {
+                                        "id": 2,
+                                        "sale_id": 8,
+                                        "warehouse_id": 2,
+                                        "status": "pending"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/refunds/{refund}": {
+            "get": {
+                "tags": [
+                    "Refunds"
+                ],
+                "summary": "Get refund details",
+                "operationId": "5a015544413a1d04461220fd7c4c26c2",
+                "parameters": [
+                    {
+                        "name": "refund",
+                        "in": "path",
+                        "description": "Refund ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "sale_id": 5,
+                                        "warehouse_id": 1,
+                                        "notes": "Customer returned defective item",
+                                        "status": "completed",
+                                        "items": [
+                                            {
+                                                "id": 1,
+                                                "sale_item_id": 12,
+                                                "quantity": 1
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Refund not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Refunds"
+                ],
+                "summary": "Update refund status/notes",
+                "operationId": "3ccdb617dd71ebf6e71edd2374b1db09",
+                "parameters": [
+                    {
+                        "name": "refund",
+                        "in": "path",
+                        "description": "Refund ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Refund updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Refund updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "status": "completed",
+                                        "notes": "Refund processed"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Refund not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Refunds"
+                ],
+                "summary": "Delete refund record",
+                "operationId": "3914507a56af35a628bf140ad992f55f",
+                "parameters": [
+                    {
+                        "name": "refund",
+                        "in": "path",
+                        "description": "Refund ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Refund deleted successfully"
+                    },
+                    "404": {
+                        "description": "Refund not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/sales": {
+            "get": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "List all sales",
+                "operationId": "23729af480cf8e41251852845a793e7f",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "current_page": 1,
+                                        "data": [
+                                            {
+                                                "id": 1,
+                                                "sale_number": "SALE-0001",
+                                                "total": 1999,
+                                                "customer_name": "John Doe",
+                                                "status": "completed"
+                                            }
+                                        ],
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Create new sale",
+                "operationId": "4547e4ebaecdac47ec1f31f4591554d8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "warehouse_id",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "warehouse_id": {
+                                        "type": "integer"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                },
+                                                "unit_price": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "payments": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "account_id": {
+                                                    "type": "integer"
+                                                },
+                                                "amount": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "customer_name": {
+                                        "type": "string"
+                                    },
+                                    "customer_email": {
+                                        "type": "string"
+                                    },
+                                    "currency": {
+                                        "type": "string"
+                                    },
+                                    "branch_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Sale created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Sale created successfully.",
+                                    "data": {
+                                        "id": 2,
+                                        "sale_number": "SALE-0002",
+                                        "total": 150,
+                                        "customer_name": "Jane Smith"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/v1/sales/{sale}": {
+            "get": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Get sale details",
+                "operationId": "a81e8668c17d88300ae96ffffa92a642",
+                "parameters": [
+                    {
+                        "name": "sale",
+                        "in": "path",
+                        "description": "Sale ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "data": {
+                                        "id": 1,
+                                        "sale_number": "SALE-0001",
+                                        "total": 1999,
+                                        "customer_name": "John Doe",
+                                        "status": "completed",
+                                        "items": [
+                                            {
+                                                "id": 1,
+                                                "product_id": 1,
+                                                "quantity": 1,
+                                                "selling_price": 1999
+                                            }
+                                        ],
+                                        "payments": [
+                                            {
+                                                "id": 1,
+                                                "account_id": 1,
+                                                "amount": 1999,
+                                                "method": "cash"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sale not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Update sale status/notes",
+                "operationId": "b53a93cadd0173bc3134d8db32287029",
+                "parameters": [
+                    {
+                        "name": "sale",
+                        "in": "path",
+                        "description": "Sale ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string"
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sale updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {},
+                                "example": {
+                                    "message": "Sale updated.",
+                                    "data": {
+                                        "id": 1,
+                                        "status": "shipped",
+                                        "notes": "Package sent via FedEx"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sale not found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Sales"
+                ],
+                "summary": "Delete sale record",
+                "operationId": "808c0dfc06dd84128a14b987a50b33d5",
+                "parameters": [
+                    {
+                        "name": "sale",
+                        "in": "path",
+                        "description": "Sale ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Sale deleted successfully"
+                    },
+                    "404": {
+                        "description": "Sale not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Enter token in 'Bearer {token}' format",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Accounting",
+            "description": "Accounting"
+        },
+        {
+            "name": "Expenses",
+            "description": "Expenses"
+        },
+        {
+            "name": "Inventory",
+            "description": "Inventory"
+        },
+        {
+            "name": "Categories",
+            "description": "Categories"
+        },
+        {
+            "name": "Products",
+            "description": "Products"
+        },
+        {
+            "name": "Refunds",
+            "description": "Refunds"
+        },
+        {
+            "name": "Sales",
+            "description": "Sales"
+        }
+    ]
+}

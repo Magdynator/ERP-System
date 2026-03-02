@@ -1,0 +1,28 @@
+{
+    "name": "erp/core",
+    "description": "ERP Core - Users, Roles, BaseModel, Audit",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Erp\\Core\\": "src/"
+        },
+        "files": [
+            "src/Helpers/helpers.php"
+        ]
+    },
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0",
+        "spatie/laravel-permission": "^6.4"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Erp\\Core\\Providers\\CoreServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

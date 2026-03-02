@@ -1,0 +1,280 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/* ============================================
+   MODERN SAAS DASHBOARD - STRIPE / LINEAR / NOTION
+   Rebuilt from scratch - 2026 level
+   ============================================ */
+
+@layer base {
+    html {
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+}
+
+@layer components {
+    /* --- Buttons: Large, modern, 0.3s ease --- */
+    .btn {
+        @apply inline-flex items-center justify-center font-medium text-[15px] rounded-2xl px-6 py-3 transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#f8fafc] disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .btn-primary {
+        @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+    .btn-primary:hover {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    }
+    .btn-outline {
+        @apply btn bg-white text-gray-700 ring-1 ring-gray-200 hover:ring-gray-300 hover:bg-gray-50 focus:ring-gray-400;
+    }
+    .btn-secondary {
+        @apply btn-outline;
+    }
+    .btn-ghost {
+        @apply btn text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-300;
+    }
+    .btn-danger {
+        @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    }
+    .btn-sm {
+        @apply px-4 py-2 text-sm rounded-xl;
+    }
+
+    /* --- Form inputs: Focus rings, 0.3s --- */
+    .form-group {
+        @apply flex flex-col gap-2;
+    }
+    .form-label {
+        @apply block text-sm font-medium text-gray-700;
+    }
+    .form-hint {
+        @apply text-xs text-gray-500 mt-0.5;
+    }
+    .input {
+        @apply w-full rounded-2xl ring-1 ring-gray-200 bg-white px-4 py-3 text-[15px] text-gray-900 placeholder-gray-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:ring-offset-0 focus:ring-indigo-500 hover:ring-gray-300;
+    }
+    .input-error {
+        @apply input ring-red-300 focus:ring-red-500/30;
+    }
+    .select {
+        @apply input appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%239ca3af%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M6%208l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_1rem_center] bg-no-repeat pr-12;
+    }
+    .textarea {
+        @apply input min-h-[120px] resize-y;
+    }
+    .checkbox {
+        @apply rounded-lg ring-1 ring-gray-300 text-indigo-600 focus:ring-indigo-500/30 w-5 h-5 transition-all duration-300;
+    }
+
+    /* --- Cards: 16px radius, soft layered shadows, NO borders, hover scale 1.03 --- */
+    .card {
+        @apply rounded-2xl bg-white p-6 transition-all duration-300 ease-out;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+    }
+    .card-elevated {
+        @apply card;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 10px 20px -5px rgb(0 0 0 / 0.04);
+    }
+    .card-hover {
+        @apply card cursor-pointer;
+    }
+    .card-hover:hover {
+        transform: scale(1.03);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 20px 40px -10px rgb(0 0 0 / 0.05);
+    }
+
+    /* --- Modern Stat Cards --- */
+    .stat-card-modern {
+        @apply rounded-2xl bg-white p-6 transition-all duration-300 ease-out cursor-default;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 8px -2px rgb(0 0 0 / 0.06);
+    }
+    .stat-card-modern:hover {
+        transform: scale(1.03) translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 20px 40px -12px rgb(0 0 0 / 0.06);
+    }
+    .stat-icon {
+        @apply w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300;
+    }
+    .stat-value-modern {
+        @apply block text-3xl font-bold text-gray-900 tracking-tight;
+    }
+    .stat-label-modern {
+        @apply block text-sm font-medium text-gray-500 mt-1;
+    }
+
+    /* --- Legacy stat cards (keep for compatibility) --- */
+    .stat-card {
+        @apply rounded-2xl bg-white p-6 transition-all duration-300 ease-out;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+    }
+    .stat-card:hover {
+        transform: scale(1.03);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 10px 20px -5px rgb(0 0 0 / 0.04);
+    }
+    .stat-label {
+        @apply text-xs font-semibold text-gray-500 uppercase tracking-wider;
+    }
+    .stat-value {
+        @apply text-2xl font-bold text-gray-900 mt-2 tracking-tight;
+    }
+
+    /* --- Chart card --- */
+    .chart-card {
+        @apply rounded-2xl bg-white p-6 transition-all duration-300 ease-out;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 8px -2px rgb(0 0 0 / 0.06);
+    }
+
+    /* --- Action cards (quick links) --- */
+    .action-card {
+        @apply flex items-center gap-4 rounded-2xl bg-white p-5 cursor-pointer transition-all duration-300 ease-out;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 8px -2px rgb(0 0 0 / 0.06);
+        text-decoration: none;
+    }
+    .action-card:hover {
+        transform: scale(1.03) translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 20px 40px -12px rgb(0 0 0 / 0.06);
+    }
+    .action-icon {
+        @apply w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300;
+    }
+
+    /* --- Table card --- */
+    .table-card {
+        @apply rounded-2xl overflow-hidden bg-white;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 8px -2px rgb(0 0 0 / 0.06);
+    }
+
+    /* --- Tables: Clean, no heavy borders --- */
+    .table-wrapper {
+        @apply rounded-2xl overflow-hidden bg-white;
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+    }
+    .table-modern {
+        @apply min-w-full;
+    }
+    .table-modern thead {
+        @apply bg-gray-50/70;
+    }
+    .table-modern th {
+        @apply px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider;
+    }
+    .table-modern tbody tr {
+        @apply border-t border-gray-100/80 transition-colors duration-300;
+    }
+    .table-modern tbody tr:hover {
+        @apply bg-indigo-50/30;
+    }
+    .table-modern td {
+        @apply px-6 py-4 text-[15px] text-gray-900;
+    }
+    .table-modern td.table-cell-muted {
+        @apply text-gray-500;
+    }
+
+    /* --- Dark Sidebar --- */
+    .sidebar-link {
+        @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-300 ease-out text-slate-400 hover:text-white hover:bg-white/[0.06];
+    }
+    .sidebar-link-active {
+        @apply text-white bg-white/[0.08];
+        box-shadow: inset 3px 0 0 0 #818cf8;
+    }
+    .sidebar-section-label {
+        @apply px-3 py-2 text-[11px] font-semibold text-slate-600 uppercase tracking-widest;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+
+    /* --- Typography: BIG headings, smaller subtext --- */
+    .heading-1 {
+        @apply text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight;
+    }
+    .heading-2 {
+        @apply text-xl font-semibold text-gray-900 tracking-tight;
+    }
+    .heading-3 {
+        @apply text-lg font-semibold text-gray-900;
+    }
+    .body {
+        @apply text-[15px] text-gray-600 leading-relaxed;
+    }
+    .body-sm {
+        @apply text-sm text-gray-500;
+    }
+
+    /* --- Page layout: 24px+ padding, large spacing --- */
+    .page-header {
+        @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10;
+    }
+    .page-title-section {
+        @apply flex flex-col gap-2;
+    }
+    .section-title {
+        @apply heading-2 mb-6;
+    }
+
+    /* --- Links --- */
+    .link {
+        @apply text-indigo-600 hover:text-indigo-700 font-medium transition-colors duration-300;
+    }
+    .link-muted {
+        @apply text-gray-500 hover:text-gray-900 font-medium transition-colors duration-300;
+    }
+    .link-back {
+        @apply inline-flex items-center gap-2 text-[15px] text-gray-500 hover:text-gray-900 font-medium transition-colors duration-300 mb-8;
+    }
+
+    /* --- Alerts: Minimal --- */
+    .alert {
+        @apply rounded-2xl px-5 py-4 text-[15px];
+    }
+    .alert-success {
+        @apply alert bg-emerald-50/90 text-emerald-800;
+    }
+    .alert-error {
+        @apply alert bg-red-50/90 text-red-800;
+    }
+
+    /* --- Form card --- */
+    .form-card {
+        @apply card max-w-xl;
+    }
+
+    /* --- Empty state --- */
+    .empty-state {
+        @apply py-20 px-8 text-center text-[15px] text-gray-500;
+    }
+
+    /* --- Animations: Fade-in sections, 0.3s --- */
+    .animate-in {
+        opacity: 0;
+        animation: fadeSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .animate-in-delay-1 { animation-delay: 80ms; }
+    .animate-in-delay-2 { animation-delay: 160ms; }
+    .animate-in-delay-3 { animation-delay: 240ms; }
+    .animate-in-delay-4 { animation-delay: 320ms; }
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

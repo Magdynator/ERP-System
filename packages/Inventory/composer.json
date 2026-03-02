@@ -1,0 +1,27 @@
+{
+    "name": "erp/inventory",
+    "description": "ERP Inventory - Warehouses and Stock Movements",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Erp\\Inventory\\": "src/",
+            "Erp\\Inventory\\Database\\": "Database/"
+        }
+    },
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0",
+        "erp/core": "@dev",
+        "erp/products": "@dev"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Erp\\Inventory\\Providers\\InventoryServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

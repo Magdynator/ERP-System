@@ -1,0 +1,27 @@
+{
+    "name": "erp/expenses",
+    "description": "ERP Expenses - Expense tracking with accounting",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Erp\\Expenses\\": "src/",
+            "Erp\\Expenses\\Database\\": "Database/"
+        }
+    },
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0|^12.0",
+        "erp/core": "@dev",
+        "erp/accounting": "@dev"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Erp\\Expenses\\Providers\\ExpensesServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
