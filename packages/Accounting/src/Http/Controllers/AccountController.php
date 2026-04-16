@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Erp\Accounting\Http\Controllers;
 
-use Erp\Accounting\Contracts\AccountingServiceInterface;
+use Erp\Accounting\Contracts\AccountServiceInterface;
+use Erp\Accounting\Http\Requests\StoreAccountRequest;
+use Erp\Accounting\Http\Requests\UpdateAccountRequest;
 use Erp\Accounting\Models\Account;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +14,7 @@ use Illuminate\Http\Request;
 class AccountController extends Controller
 {
     public function __construct(
-        protected AccountingServiceInterface $accountingService
+        protected AccountServiceInterface $accountService
     ) {}
 
     /**
@@ -60,14 +62,11 @@ class AccountController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Account::query();
-        if ($request->boolean('active_only')) {
-            $query->where('is_active', true);
-        }
-        if ($request->filled('type')) {
-            $query->where('type', $request->string('type'));
-        }
-        $accounts = $query->orderBy('code')->paginate($request->integer('per_page', 15));
+        $accounts = $this->accountService->getPaginatedAccounts(
+            $request->integer('per_page', 15),
+            $request->string('type')->toString() ?: null,
+            $request->boolean('active_only')
+        );
 
         return response()->json(['data' => $accounts]);
     }
@@ -105,7 +104,7 @@ class AccountController extends Controller
      */
     public function show(Account $account): JsonResponse
     {
-        $balance = $this->accountingService->getAccountBalance($account->id);
+        $balance = $this->accountService->getAccountBalance($account->id);
         $account->setAttribute('balance', $balance);
 
         return response()->json(['data' => $account]);
@@ -146,18 +145,11 @@ class AccountController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreAccountRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255', 'unique:accounts,code'],
-            'type' => ['required', 'string', 'in:asset,liability,equity,revenue,expense'],
-            'branch_id' => ['nullable', 'integer'],
-            'is_active' => ['boolean'],
-        ]);
-        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated = $request->validated();
 
-        $account = Account::create($validated);
+        $account = $this->accountService->createAccount($validated);
 
         return response()->json(['data' => $account, 'message' => 'Account created.'], 201);
     }
@@ -203,19 +195,13 @@ class AccountController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(Request $request, Account $account): JsonResponse
+    public function update(UpdateAccountRequest $request, Account $account): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'code' => ['sometimes', 'string', 'max:255', 'unique:accounts,code,' . $account->id],
-            'type' => ['sometimes', 'string', 'in:asset,liability,equity,revenue,expense'],
-            'branch_id' => ['nullable', 'integer'],
-            'is_active' => ['boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $account->update($validated);
+        $account = $this->accountService->updateAccount($account, $validated);
 
-        return response()->json(['data' => $account->fresh(), 'message' => 'Account updated.']);
+        return response()->json(['data' => $account, 'message' => 'Account updated.']);
     }
 
     /**
@@ -236,7 +222,7 @@ class AccountController extends Controller
      */
     public function destroy(Account $account): JsonResponse
     {
-        $account->delete();
+        $this->accountService->deleteAccount($account);
 
         return response()->json(['message' => 'Account deleted.'], 204);
     }

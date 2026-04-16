@@ -12,6 +12,8 @@ use Erp\Sales\Contracts\SaleRefundDataInterface;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class RefundService
 {
     public function __construct(
@@ -19,6 +21,25 @@ class RefundService
         protected InventoryServiceInterface $inventory,
         protected SaleRefundDataInterface $saleRefundData
     ) {}
+
+    public function getPaginatedRefunds(int $perPage = 15): LengthAwarePaginator
+    {
+        return Refund::with('items')
+            ->orderByDesc('refund_date')
+            ->paginate($perPage);
+    }
+
+    public function updateRefund(Refund $refund, array $data): Refund
+    {
+        $refund->update($data);
+
+        return $refund->fresh('items');
+    }
+
+    public function deleteRefund(Refund $refund): void
+    {
+        $refund->delete();
+    }
 
     /**
      * Create refund: reverse accounting (revenue/cash), return stock. Never delete sale.

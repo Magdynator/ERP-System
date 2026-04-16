@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,11 +10,5 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('v1')->group(function () {
-    Route::post('login', [AuthController::class, 'login'])->name('api.v1.login');
-    
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout'])->name('api.v1.logout');
-        Route::get('health', fn () => response()->json(['status' => 'ok']))->name('api.v1.health');
-    });
-});
+// Auth and other core API routing are now handled by their respective packages
+// For example: packages/Core/routes/api.php

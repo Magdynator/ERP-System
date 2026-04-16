@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Erp\Products\Http\Controllers;
 
+use Erp\Products\Contracts\CategoryServiceInterface;
+use Erp\Products\Http\Requests\StoreCategoryRequest;
+use Erp\Products\Http\Requests\UpdateCategoryRequest;
 use Erp\Products\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    public function __construct(
+        protected CategoryServiceInterface $categoryService
+    ) {}
     /**
      * @OA\Get(
      *     path="/api/v1/categories",
@@ -48,11 +54,10 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Category::query()->withCount('products');
-        if ($request->boolean('active_only')) {
-            $query->where('is_active', true);
-        }
-        $categories = $query->orderBy('name')->paginate($request->integer('per_page', 15));
+        $categories = $this->categoryService->getPaginatedCategories(
+            $request->integer('per_page', 15),
+            $request->boolean('active_only')
+        );
 
         return response()->json(['data' => $categories]);
     }
@@ -131,21 +136,11 @@ class CategoryController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:categories,slug'],
-            'description' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'is_active' => ['boolean'],
-        ]);
-        $validated['is_active'] = $validated['is_active'] ?? true;
-        if (empty($validated['slug'])) {
-            $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
-        }
+        $validated = $request->validated();
 
-        $category = Category::create($validated);
+        $category = $this->categoryService->createCategory($validated);
 
         return response()->json(['data' => $category, 'message' => 'Category created.'], 201);
     }
@@ -190,19 +185,13 @@ class CategoryController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(Request $request, Category $category): JsonResponse
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:categories,slug,' . $category->id],
-            'description' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'is_active' => ['boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $category->update($validated);
+        $category = $this->categoryService->updateCategory($category, $validated);
 
-        return response()->json(['data' => $category->fresh(), 'message' => 'Category updated.']);
+        return response()->json(['data' => $category, 'message' => 'Category updated.']);
     }
 
     /**
@@ -223,7 +212,7 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
-        $category->delete();
+        $this->categoryService->deleteCategory($category);
 
         return response()->json(['message' => 'Category deleted.'], 204);
     }

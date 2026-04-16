@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Erp\Inventory\Http\Controllers;
 
+use Erp\Inventory\Contracts\WarehouseServiceInterface;
+use Erp\Inventory\Http\Requests\StoreWarehouseRequest;
+use Erp\Inventory\Http\Requests\UpdateWarehouseRequest;
 use Erp\Inventory\Models\Warehouse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
 {
+    public function __construct(
+        protected WarehouseServiceInterface $warehouseService
+    ) {}
     /**
      * @OA\Get(
      *     path="/api/v1/warehouses",
@@ -48,11 +54,10 @@ class WarehouseController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Warehouse::query();
-        if ($request->boolean('active_only')) {
-            $query->where('is_active', true);
-        }
-        $warehouses = $query->orderBy('name')->paginate($request->integer('per_page', 15));
+        $warehouses = $this->warehouseService->getPaginatedWarehouses(
+            $request->integer('per_page', 15),
+            $request->boolean('active_only')
+        );
 
         return response()->json(['data' => $warehouses]);
     }
@@ -124,17 +129,11 @@ class WarehouseController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreWarehouseRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255', 'unique:warehouses,code'],
-            'branch_id' => ['nullable', 'integer'],
-            'is_active' => ['boolean'],
-        ]);
-        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated = $request->validated();
 
-        $warehouse = Warehouse::create($validated);
+        $warehouse = $this->warehouseService->createWarehouse($validated);
 
         return response()->json(['data' => $warehouse, 'message' => 'Warehouse created.'], 201);
     }
@@ -178,18 +177,13 @@ class WarehouseController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(Request $request, Warehouse $warehouse): JsonResponse
+    public function update(UpdateWarehouseRequest $request, Warehouse $warehouse): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'code' => ['sometimes', 'string', 'max:255', 'unique:warehouses,code,' . $warehouse->id],
-            'branch_id' => ['nullable', 'integer'],
-            'is_active' => ['boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $warehouse->update($validated);
+        $warehouse = $this->warehouseService->updateWarehouse($warehouse, $validated);
 
-        return response()->json(['data' => $warehouse->fresh(), 'message' => 'Warehouse updated.']);
+        return response()->json(['data' => $warehouse, 'message' => 'Warehouse updated.']);
     }
 
     /**
@@ -210,7 +204,7 @@ class WarehouseController extends Controller
      */
     public function destroy(Warehouse $warehouse): JsonResponse
     {
-        $warehouse->delete();
+        $this->warehouseService->deleteWarehouse($warehouse);
 
         return response()->json(['message' => 'Warehouse deleted.'], 204);
     }

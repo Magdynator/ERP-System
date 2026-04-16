@@ -13,6 +13,8 @@ use Erp\Sales\Models\SaleItem;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class SaleService
 {
     public function __construct(
@@ -20,6 +22,25 @@ class SaleService
         protected InventoryServiceInterface $inventory,
         protected ProductServiceInterface $productService
     ) {}
+
+    public function getPaginatedSales(int $perPage = 15): LengthAwarePaginator
+    {
+        return Sale::with(['items', 'payments'])
+            ->orderByDesc('sale_date')
+            ->paginate($perPage);
+    }
+
+    public function updateSale(Sale $sale, array $data): Sale
+    {
+        $sale->update($data);
+
+        return $sale->fresh(['items', 'payments']);
+    }
+
+    public function deleteSale(Sale $sale): void
+    {
+        $sale->delete();
+    }
 
     /**
      * Create a sale: snapshot prices, deduct inventory, record accounting entry.

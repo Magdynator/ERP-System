@@ -8,11 +8,32 @@ use Erp\Accounting\Contracts\AccountingServiceInterface;
 use Erp\Expenses\Models\Expense;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class ExpenseService
 {
     public function __construct(
         protected AccountingServiceInterface $accounting
     ) {}
+
+    public function getPaginatedExpenses(int $perPage = 15): LengthAwarePaginator
+    {
+        return Expense::with('category')
+            ->orderByDesc('expense_date')
+            ->paginate($perPage);
+    }
+
+    public function updateExpense(Expense $expense, array $data): Expense
+    {
+        $expense->update($data);
+
+        return $expense->fresh('category');
+    }
+
+    public function deleteExpense(Expense $expense): void
+    {
+        $expense->delete();
+    }
 
     /**
      * Create expense and record journal entry: Dr Expense, Cr Cash.

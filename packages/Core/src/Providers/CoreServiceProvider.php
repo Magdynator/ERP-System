@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Erp\Core\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,5 +29,16 @@ class CoreServiceProvider extends ServiceProvider
         }
 
         Schema::defaultStringLength(191);
+
+        // Load web routes
+        Route::middleware('web')->group(function () {
+            $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
+        });
+
+        // Load API routes
+        Route::prefix('api/v1')->middleware('auth:sanctum')->group(function () {
+            $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
+        });
     }
 }
+

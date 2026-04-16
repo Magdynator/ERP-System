@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Erp\Refunds\Http\Controllers;
 
 use Erp\Refunds\Http\Requests\StoreRefundRequest;
+use Erp\Refunds\Http\Requests\UpdateRefundRequest;
 use Erp\Refunds\Models\Refund;
 use Erp\Refunds\Services\RefundService;
 use Illuminate\Http\JsonResponse;
@@ -188,16 +189,13 @@ class RefundController extends Controller
      *     @OA\Response(response=404, description="Refund not found")
      * )
      */
-    public function update(Request $request, Refund $refund): JsonResponse
+    public function update(UpdateRefundRequest $request, Refund $refund): JsonResponse
     {
-        $validated = $request->validate([
-            'status' => ['sometimes', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
-        $refund->update($validated);
+        $refund = $this->refundService->updateRefund($refund, $validated);
 
-        return response()->json(['data' => $refund->fresh('items'), 'message' => 'Refund updated.']);
+        return response()->json(['data' => $refund, 'message' => 'Refund updated.']);
     }
 
     /**
@@ -218,7 +216,7 @@ class RefundController extends Controller
      */
     public function destroy(Refund $refund): JsonResponse
     {
-        $refund->delete();
+        $this->refundService->deleteRefund($refund);
 
         return response()->json(['message' => 'Refund deleted.'], 204);
     }

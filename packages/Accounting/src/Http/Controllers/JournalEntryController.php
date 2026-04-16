@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Erp\Accounting\Http\Controllers;
 
 use Erp\Accounting\Contracts\AccountingServiceInterface;
+use Erp\Accounting\Http\Requests\StoreJournalEntryRequest;
 use Erp\Accounting\Models\JournalEntry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -155,19 +156,9 @@ class JournalEntryController extends Controller
      *     @OA\Response(response=422, description="Validation error or unbalanced entry")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreJournalEntryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'description' => ['required', 'string', 'max:255'],
-            'lines' => ['required', 'array', 'min:2'],
-            'lines.*.account_id' => ['required', 'integer', 'exists:accounts,id'],
-            'lines.*.debit' => ['required_without:lines.*.credit', 'numeric', 'min:0'],
-            'lines.*.credit' => ['required_without:lines.*.debit', 'numeric', 'min:0'],
-            'reference_type' => ['nullable', 'string'],
-            'reference_id' => ['nullable', 'integer'],
-            'currency' => ['nullable', 'string', 'max:3'],
-            'branch_id' => ['nullable', 'integer'],
-        ]);
+        $validated = $request->validated();
         foreach ($validated['lines'] as $line) {
             $line['debit'] = (float) ($line['debit'] ?? 0);
             $line['credit'] = (float) ($line['credit'] ?? 0);

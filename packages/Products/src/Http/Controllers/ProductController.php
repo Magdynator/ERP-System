@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace Erp\Products\Http\Controllers;
 
+use Erp\Products\Contracts\ProductServiceInterface;
+use Erp\Products\Http\Requests\StoreProductRequest;
+use Erp\Products\Http\Requests\UpdateProductRequest;
 use Erp\Products\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        protected ProductServiceInterface $productService
+    ) {}
     /**
      * @OA\Get(
      *     path="/api/v1/products",
@@ -55,14 +61,11 @@ class ProductController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Product::query()->with('category');
-        if ($request->boolean('active_only')) {
-            $query->where('is_active', true);
-        }
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->integer('category_id'));
-        }
-        $products = $query->orderBy('name')->paginate($request->integer('per_page', 15));
+        $products = $this->productService->getPaginatedProducts(
+            $request->integer('per_page', 15),
+            $request->has('category_id') ? $request->integer('category_id') : null,
+            $request->boolean('active_only')
+        );
 
         return response()->json(['data' => $products]);
     }
@@ -147,21 +150,11 @@ class ProductController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreProductRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:255', 'unique:products,sku'],
-            'cost_price' => ['required', 'numeric', 'min:0'],
-            'selling_price' => ['required', 'numeric', 'min:0'],
-            'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'is_active' => ['boolean'],
-        ]);
-        $validated['tax_percentage'] = $validated['tax_percentage'] ?? 0;
-        $validated['is_active'] = $validated['is_active'] ?? true;
+        $validated = $request->validated();
 
-        $product = Product::create($validated);
+        $product = $this->productService->createProduct($validated);
 
         return response()->json(['data' => $product, 'message' => 'Product created.'], 201);
     }
@@ -210,21 +203,13 @@ class ProductController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(Request $request, Product $product): JsonResponse
+    public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255'],
-            'sku' => ['sometimes', 'string', 'max:255', 'unique:products,sku,' . $product->id],
-            'cost_price' => ['sometimes', 'numeric', 'min:0'],
-            'selling_price' => ['sometimes', 'numeric', 'min:0'],
-            'tax_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'is_active' => ['boolean'],
-        ]);
+        $validated = $request->validated();
 
-        $product->update($validated);
+        $product = $this->productService->updateProduct($product, $validated);
 
-        return response()->json(['data' => $product->fresh(), 'message' => 'Product updated.']);
+        return response()->json(['data' => $product, 'message' => 'Product updated.']);
     }
 
     /**
@@ -245,7 +230,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product): JsonResponse
     {
-        $product->delete();
+        $this->productService->deleteProduct($product);
 
         return response()->json(['message' => 'Product deleted.'], 204);
     }

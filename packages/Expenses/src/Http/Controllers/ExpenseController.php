@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Erp\Expenses\Http\Controllers;
 
 use Erp\Expenses\Http\Requests\StoreExpenseRequest;
+use Erp\Expenses\Http\Requests\UpdateExpenseRequest;
 use Erp\Expenses\Models\Expense;
 use Erp\Expenses\Services\ExpenseService;
 use Illuminate\Http\JsonResponse;
@@ -190,22 +191,13 @@ class ExpenseController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function update(Request $request, Expense $expense): JsonResponse
+    public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse
     {
-        $validated = $request->validate([
-            'expense_category_id' => ['sometimes', 'integer', 'exists:expense_categories,id'],
-            'amount' => ['sometimes', 'numeric', 'min:0'],
-            'expense_date' => ['sometimes', 'date'],
-            'vendor_name' => ['nullable', 'string', 'max:255'],
-            'vendor_reference' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'currency' => ['nullable', 'string', 'max:3'],
-            'branch_id' => ['nullable', 'integer'],
-        ]);
+        $validated = $request->validated();
 
-        $expense->update($validated);
+        $expense = $this->expenseService->updateExpense($expense, $validated);
 
-        return response()->json(['data' => $expense->fresh('category'), 'message' => 'Expense updated.']);
+        return response()->json(['data' => $expense, 'message' => 'Expense updated.']);
     }
 
     /**
@@ -226,7 +218,7 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense): JsonResponse
     {
-        $expense->delete();
+        $this->expenseService->deleteExpense($expense);
 
         return response()->json(['message' => 'Expense deleted.'], 204);
     }

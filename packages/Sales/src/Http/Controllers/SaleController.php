@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Erp\Sales\Http\Controllers;
 
 use Erp\Sales\Http\Requests\StoreSaleRequest;
+use Erp\Sales\Http\Requests\UpdateSaleRequest;
 use Erp\Sales\Models\Sale;
 use Erp\Sales\Services\SaleService;
 use Illuminate\Http\JsonResponse;
@@ -201,16 +202,13 @@ class SaleController extends Controller
      *     @OA\Response(response=404, description="Sale not found")
      * )
      */
-    public function update(Request $request, Sale $sale): JsonResponse
+    public function update(UpdateSaleRequest $request, Sale $sale): JsonResponse
     {
-        $validated = $request->validate([
-            'status' => ['sometimes', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
-        $sale->update($validated);
+        $sale = $this->saleService->updateSale($sale, $validated);
 
-        return response()->json(['data' => $sale->fresh(['items', 'payments']), 'message' => 'Sale updated.']);
+        return response()->json(['data' => $sale, 'message' => 'Sale updated.']);
     }
 
     /**
@@ -231,7 +229,7 @@ class SaleController extends Controller
      */
     public function destroy(Sale $sale): JsonResponse
     {
-        $sale->delete();
+        $this->saleService->deleteSale($sale);
 
         return response()->json(['message' => 'Sale deleted.'], 204);
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Erp\Inventory\Http\Controllers;
 
 use Erp\Inventory\Contracts\InventoryServiceInterface;
+use Erp\Inventory\Services\StockMovementService;
+use Erp\Inventory\Http\Requests\GetStockRequest;
 use Erp\Inventory\Models\StockMovement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +14,8 @@ use Illuminate\Http\Request;
 class StockMovementController extends Controller
 {
     public function __construct(
-        protected InventoryServiceInterface $inventoryService
+        protected InventoryServiceInterface $inventoryService,
+        protected StockMovementService $stockMovementService
     ) {}
 
     /**
@@ -65,14 +68,11 @@ class StockMovementController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = StockMovement::query()->with(['warehouse', 'product' => fn ($q) => $q->select('id', 'name', 'sku')]);
-        if ($request->filled('warehouse_id')) {
-            $query->where('warehouse_id', $request->integer('warehouse_id'));
-        }
-        if ($request->filled('product_id')) {
-            $query->where('product_id', $request->integer('product_id'));
-        }
-        $movements = $query->orderByDesc('created_at')->paginate($request->integer('per_page', 15));
+        $movements = $this->stockMovementService->getPaginatedMovements(
+            $request->integer('per_page', 15),
+            $request->filled('warehouse_id') ? $request->integer('warehouse_id') : null,
+            $request->filled('product_id') ? $request->integer('product_id') : null
+        );
 
         return response()->json(['data' => $movements]);
     }
@@ -156,12 +156,9 @@ class StockMovementController extends Controller
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
-    public function stock(Request $request): JsonResponse
+    public function stock(GetStockRequest $request): JsonResponse
     {
-        $request->validate([
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'warehouse_id' => ['nullable', 'integer', 'exists:warehouses,id'],
-        ]);
+        $validated = $request->validated();
         $productId = $request->integer('product_id');
         $warehouseId = $request->integer('warehouse_id');
 

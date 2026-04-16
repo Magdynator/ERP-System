@@ -27,6 +27,10 @@ class RefundsServiceProvider extends ServiceProvider
             $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
         }
 
+        Route::middleware('web')->group(function () {
+            $this->loadRoutesFrom(__DIR__ . '/../../Routes/web.php');
+        });
+
         Route::prefix('api/v1')->middleware('auth:sanctum')->group(function () {
             $this->loadRoutesFrom(__DIR__ . '/../../Routes/api.php');
         });

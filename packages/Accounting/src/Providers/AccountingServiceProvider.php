@@ -14,6 +14,7 @@ class AccountingServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(AccountingServiceInterface::class, AccountingService::class);
+        $this->app->bind(\Erp\Accounting\Contracts\AccountServiceInterface::class, \Erp\Accounting\Services\AccountService::class);
 
         $this->mergeConfigFrom(
             __DIR__ . '/../Config/accounting.php',
@@ -30,6 +31,10 @@ class AccountingServiceProvider extends ServiceProvider
 
             $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
         }
+
+        Route::middleware('web')->group(function () {
+            $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
+        });
 
         Route::prefix('api/v1')->middleware('auth:sanctum')->group(function () {
             $this->loadRoutesFrom(__DIR__ . '/../../routes/api.php');
